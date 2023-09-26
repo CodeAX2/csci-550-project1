@@ -2,14 +2,14 @@ import pandas as pd
 import numpy as np
 import random
 
-def kMeans(dataFrame: pd.DataFrame, k: int, epsilon: float):
 
+def kMeans(dataFrame: pd.DataFrame, k: int, epsilon: float):
     assignments = []
     observations = dataFrame.values
 
     # Create random assignments
     for _ in observations:
-        assignments.append(random.randint(0,k-1))
+        assignments.append(random.randint(0, k - 1))
 
     # Compute initial centroids
     centroids = np.zeros((k, observations.shape[1]))
@@ -25,12 +25,12 @@ def kMeans(dataFrame: pd.DataFrame, k: int, epsilon: float):
         for observation in observations:
             bestCluster = closestCentroid(observation, centroids)
             assignments.append(bestCluster)
-        
+
         # Compute new centroids
         centroids = np.zeros((k, observations.shape[1]))
         for i in range(0, k):
             centroids[i] = computeCentroid(observations, assignments, i)
-            
+
         # Check change in centroids
         changed = False
         for i in range(0, k):
@@ -41,10 +41,8 @@ def kMeans(dataFrame: pd.DataFrame, k: int, epsilon: float):
         # If centroids did not change, exit loop
         if not changed:
             break
-    
+
     return (centroids, assignments)
-
-
 
 
 def computeCentroid(observations: np.ndarray, curAssignments: list, cluster: int):
@@ -66,17 +64,19 @@ def computeCentroid(observations: np.ndarray, curAssignments: list, cluster: int
             center[i] = np.inf
     return center
 
+
 def closestCentroid(observation, centroids):
     closestIndex = 0
     minDist = np.inf
     for i, centroid in enumerate(centroids):
         curDist = dist(observation, centroid)
         # Require strict inequality, so that lower indexed centroids are prefered
-        if (curDist < minDist):
+        if curDist < minDist:
             minDist = curDist
             closestIndex = i
 
     return closestIndex
+
 
 def dist(x1, x2):
     # Euclidian distance
