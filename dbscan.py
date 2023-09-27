@@ -42,12 +42,23 @@ class DBScan:
 
         return (self.__assignments, self.__corePts, borderPts, noisePts)
 
-    def __densityConnected(self, i, connected: list = []):
-        connected.append(i)
-        for j in self.__neighborhoods[i]:
-            self.__assignments[j] = self.__curCluster
-            if j in self.__corePts and j not in connected:
-                self.__densityConnected(j, connected)
+    def __densityConnected(self, x):
+        connected = set()
+
+        curNeighbors = set()
+        curNeighbors.add(x)
+
+        while len(curNeighbors) != 0:
+            newNeighbors = set()
+            for i in curNeighbors:
+                for j in self.__neighborhoods[i]:
+                    if j in self.__corePts and j not in connected:
+                        newNeighbors.add(j)
+                connected.add(i)
+            curNeighbors = newNeighbors
+
+        for i in connected:
+            self.__assignments[i] = self.__curCluster
 
     # Static methods
 
