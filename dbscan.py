@@ -3,9 +3,10 @@ import numpy as np
 
 
 class DBScan:
-    def __init__(self, minPts: int, epsilon: float) -> None:
+    def __init__(self, minPts: int, epsilon: float, noiseValue: int = -1) -> None:
         self.__minPts = minPts
         self.__epsilon = epsilon
+        self.__noiseValue = noiseValue
 
     def runAlgorithm(self, dataFrame: pd.DataFrame):
         self.__corePts = []
@@ -13,8 +14,8 @@ class DBScan:
         self.__observations = dataFrame.values
         self.__neighborhoods = DBScan.__computeNeighborhoods(dataFrame, self.__epsilon)
 
-        # Assignment of -1 denotes unassigned cluster
-        self.__assignments = np.full(self.__observations.shape[0], -1)
+        # Assignment denotes unassigned cluster (useful for coloring noise points)
+        self.__assignments = np.full(self.__observations.shape[0], self.__noiseValue)
 
         # Find core points
         for i, observation in enumerate(self.__observations):
@@ -22,9 +23,9 @@ class DBScan:
                 self.__corePts.append(i)
 
         # Assign clusters
-        self.__curCluster = 0
+        self.__curCluster = 1
         for i in self.__corePts:
-            if self.__assignments[i] != -1:
+            if self.__assignments[i] != self.__noiseValue:
                 continue
             self.__assignments[i] = self.__curCluster
             self.__densityConnected(i)
@@ -34,7 +35,7 @@ class DBScan:
         borderPts = []
         for i, observation in enumerate(self.__observations):
             # If point is unassigned, it is noise
-            if self.__assignments[i] == -1:
+            if self.__assignments[i] == self.__noiseValue:
                 noisePts.append(i)
             # Otherwise, if point is not core, it is border
             elif i not in self.__corePts:
@@ -42,12 +43,20 @@ class DBScan:
 
         return (self.__assignments, self.__corePts, borderPts, noisePts)
 
-    def __densityConnected(self, i, connected: list = []):
-        connected.append(i)
-        for j in self.__neighborhoods[i]:
-            self.__assignments[j] = self.__curCluster
-            if j in self.__corePts and j not in connected:
-                self.__densityConnected(j, connected)
+    def __densityConnected(self, x):
+        visited = set()
+        toVisit = []
+
+        toVisit.append(x)
+
+        while len(toVisit) != 0:
+            curPt = toVisit.pop()
+            visited.add(curPt)
+            for i in self.__neighborhoods[curPt]:
+                if i not in visited:
+                    self.__assignments[i] = self.__curCluster
+                    if i in self.__corePts:
+                        toVisit.append(i)
 
     # Static methods
 
