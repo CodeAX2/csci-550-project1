@@ -62,7 +62,11 @@ class DBScan:
 
     def __distSquared(x1, x2):
         # Euclidian distance squared
-        return np.sum(np.square(x1 - x2))
+        total = 0
+        for x1i in x1:
+            for x2i in x2:
+                total += (x1i-x2i)^2
+        return total
 
     def __computeNeighborhoods(dataFrame: pd.DataFrame, epsilon: float):
         observations = dataFrame.values
